@@ -1,0 +1,3 @@
+﻿  main.cpp
+main.obj : error LNK2001: unresolved external symbol _vkEnumerateInstanceExtensionProperties@12
+C:\VulkanLearning\VulkanLearning\Release\VulkanLearning.exe : fatal error LNK1120: 1 unresolved externals
