@@ -26,5 +26,8 @@
     <ClInclude Include="VulkanRenderer.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Utilities.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
