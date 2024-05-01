@@ -35,6 +35,10 @@ int VulkanRenderer::init(GLFWwindow* newWindow)
 
 void VulkanRenderer::CleanUp()
 {
+	for (auto& image : swapChainImages)
+	{
+		vkDestroyImageView(mainDevice.LogicalDevice, image.imageView, nullptr); 
+	}
 	vkDestroySwapchainKHR(mainDevice.LogicalDevice, swapchain, nullptr);
 	vkDestroySurfaceKHR(instance, surface, nullptr);
 	vkDestroyDevice(mainDevice.LogicalDevice, nullptr);
@@ -297,8 +301,10 @@ void VulkanRenderer::CreateSwapChain()
 		// Store image handle
 		SwapChainImage swapchainImage = {};
 		swapchainImage.image = image;
+		swapchainImage.imageView = CreateImageView(image, swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
 
-		// CREATE IMAGE VIEW HERE
+		// Add to swap chain image list
+		swapChainImages.push_back(swapchainImage);
 	}
 }
 
@@ -613,7 +619,32 @@ VkExtent2D VulkanRenderer::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& surf
 
 VkImageView VulkanRenderer::CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags)
 {
-	return VkImageView();
+	VkImageViewCreateInfo viewCreateInfo = {};
+	viewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	viewCreateInfo.image = image;											// Image to create view for
+	viewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;						// Type of image (1D, 2D, 3D, Cube, etc)
+	viewCreateInfo.format = format;											// Format of image data
+	viewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;			// Allows remapping of rgba components to other rgba values
+	viewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+	viewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+	viewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+
+	// Subresources allow the view to view only a part of an image
+	viewCreateInfo.subresourceRange.aspectMask = aspectFlags;				// Which aspect of image to view (e.g. COLOR_BIT for viewing color)
+	viewCreateInfo.subresourceRange.baseMipLevel = 0;						// Start mipmap level to view from
+	viewCreateInfo.subresourceRange.levelCount = 1;							// Number of mipmap levels to view
+	viewCreateInfo.subresourceRange.baseArrayLayer = 0;						// Start array level to view from
+	viewCreateInfo.subresourceRange.layerCount = 1;							// Number of array levels to view
+
+	// Create image view then return it
+	VkImageView imageView;
+	VkResult result = vkCreateImageView(mainDevice.LogicalDevice, &viewCreateInfo, nullptr, &imageView);
+	if (result != VK_SUCCESS)
+	{
+		throw std::runtime_error("Failed to create an Image View!");
+	}
+
+	return imageView;
 }
 
 
