@@ -6,6 +6,8 @@
 #include <stdexcept>
 #include <vector>
 #include <set>
+#include <algorithm>
+
 #include <iostream>
 
 #include "Utilities.h"
@@ -35,10 +37,17 @@ private:
 	VkQueue graphicsQueue;
 	VkQueue presentationQueue;
 
-	VkSurfaceKHR surface;	 
+	VkSurfaceKHR surface;	
+	VkSwapchainKHR swapchain;
+
+	std::vector<SwapChainImage> swapChainImages;
 
 	// Debug messenger to handle debug callback
 	VkDebugUtilsMessengerEXT debugMessenger;
+
+	// - Utility
+	VkFormat swapChainImageFormat;
+	VkExtent2D swapChainExtent;
 
 	/**
 	 *  Vulkan functions
@@ -48,6 +57,7 @@ private:
 	void CreateLogicalDevice();
 	void CreateDebugMessenger();
 	void CreateSurface();
+	void CreateSwapChain();
 
 	// - Proxy function 
 	VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
@@ -65,6 +75,12 @@ private:
 	// -- Getter functions
 	QueueFamilyIndices GetQueueFamilies(VkPhysicalDevice device);
 	SwapChainDetails GetSwapChainDetails(VkPhysicalDevice device);
+	// -- Choose Functions
+	VkSurfaceFormatKHR ChooseBestSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& formats);
+	VkPresentModeKHR ChooseBestPresentationMode(const std::vector<VkPresentModeKHR>& presentationModes);
+	VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& surfaceCapabilities);
+	// -- Create Functions
+	VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
 
 public:
 	// Debug callback function
