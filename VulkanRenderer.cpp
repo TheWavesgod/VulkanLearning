@@ -23,6 +23,7 @@ int VulkanRenderer::init(GLFWwindow* newWindow)
 		GetPhysicalDevice();
 		CreateLogicalDevice();
 		CreateSwapChain();
+		CreateGraphicsPipeline();
 	}
 	catch (const std::runtime_error& e)
 	{
@@ -35,6 +36,7 @@ int VulkanRenderer::init(GLFWwindow* newWindow)
 
 void VulkanRenderer::CleanUp()
 {
+	vkDestroyPipelineLayout(mainDevice.LogicalDevice, pipelineLayout, nullptr);	
 	for (auto& image : swapChainImages)
 	{
 		vkDestroyImageView(mainDevice.LogicalDevice, image.imageView, nullptr); 
@@ -306,6 +308,163 @@ void VulkanRenderer::CreateSwapChain()
 		// Add to swap chain image list
 		swapChainImages.push_back(swapchainImage);
 	}
+}
+
+void VulkanRenderer::CreateGraphicsPipeline()
+{
+	// Read in SPIR-V code of shaders
+	auto vertexShaderCode = readFile("Shaders/vert.spv");
+	auto fragmentShaderCode = readFile("Shaders/frag.spv");
+
+	// Build Shader Modules to link to Graphics Pipeline
+	VkShaderModule vertexShaderModule = CreateShaderModule(vertexShaderCode);
+	VkShaderModule fragmentShaderModule = CreateShaderModule(fragmentShaderCode);
+
+
+	// -- SHADER STAGE CREATION INFO --
+	// Vertex stage creation info
+	VkPipelineShaderStageCreateInfo vertexShaderCreateInfo = {};
+	vertexShaderCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+	vertexShaderCreateInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;							// Shader Stage name
+	vertexShaderCreateInfo.module = vertexShaderModule;									// Shader Module to be used by stage
+	vertexShaderCreateInfo.pName = "main";												// Entry point in to shader
+
+	// Fragment stage creation info
+	VkPipelineShaderStageCreateInfo fragmentShaderCreateInfo = {};
+	fragmentShaderCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+	fragmentShaderCreateInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;						// Shader Stage name
+	fragmentShaderCreateInfo.module = fragmentShaderModule;								// Shader Module to be used by stage
+	fragmentShaderCreateInfo.pName = "main";											// Entry point in to shader
+
+	// Put shader stage creation info in to array
+	// Graphics Pipeline creation info requires array of shader state creates 
+	VkPipelineShaderStageCreateInfo shaderStages[] = { vertexShaderCreateInfo, fragmentShaderCreateInfo };
+	
+
+	// -- VERTEX INPUT --
+	// TODO: Put in vertex descriptions when resources created
+	VkPipelineVertexInputStateCreateInfo vertexInputCreateInfo = {};
+	vertexInputCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+	vertexInputCreateInfo.vertexBindingDescriptionCount = 0;
+	vertexInputCreateInfo.pVertexBindingDescriptions = nullptr;							// List of Vertex Binding Descriptions (data spacing / stride information)
+	vertexInputCreateInfo.vertexAttributeDescriptionCount = 0;
+	vertexInputCreateInfo.pVertexAttributeDescriptions = nullptr;						// List if Vertex Attribute Descriptions (data format and where to bind to / from)
+
+
+	// -- INPUT ASSEMBLY --
+	VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
+	inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+	inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;						// Primitive type to assemble vertices as 
+	inputAssembly.primitiveRestartEnable = VK_FALSE;									// Allow overriding of "strip" topology to start new primitives
+
+
+	// -- VIEWPORT & SCISSOR --
+	// Create a viewport info struct
+	VkViewport viewport = {};
+	viewport.x = 0.0f;									// x start coordinate
+	viewport.y = 0.0f;									// y start coordinate
+	viewport.width = (float)swapChainExtent.width;		// width of viewport
+	viewport.height = (float)swapChainExtent.height;	// height of viewport
+	viewport.minDepth = 0.0f;							// min framebuffer depth 
+	viewport.maxDepth = 1.0f;							// max framebuffer depth
+
+	// Create a scissor	info struct
+	VkRect2D scissor = {};
+	scissor.offset = { 0, 0 };							// Offset to use region from
+	scissor.extent = swapChainExtent;					// Extent to describe region to use, starting at offset
+
+	VkPipelineViewportStateCreateInfo viewportStateCreateInfo = {};
+	viewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+	viewportStateCreateInfo.viewportCount = 1;
+	viewportStateCreateInfo.pViewports = &viewport;
+	viewportStateCreateInfo.scissorCount = 1;
+	viewportStateCreateInfo.pScissors = &scissor;
+
+	/*
+	// -- DYNAMIC STATES -- 
+	// Dynamic states to enable
+	std::vector<VkDynamicState> dynamicStateEnables;
+	dynamicStateEnables.push_back(VK_DYNAMIC_STATE_VIEWPORT);		// Dynamic Viewport : Can resize in command buffer with vkCmdSetViewport() 
+	dynamicStateEnables.push_back(VK_DYNAMIC_STATE_SCISSOR);		// Dynamic Scissor  : Can resize in command buffer with vkCmdSetScissor()	
+
+	// Dynamic state creation info
+	VkPipelineDynamicStateCreateInfo dynamicStateCreateInfo = {};
+	dynamicStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+	dynamicStateCreateInfo.dynamicStateCount = static_cast<uint32_t>(dynamicStateEnables.size());
+	dynamicStateCreateInfo.pDynamicStates = dynamicStateEnables.data();
+	*/
+
+	// -- RASTERIZER --
+	VkPipelineRasterizationStateCreateInfo rasterizerCreateInfo = {};
+	rasterizerCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+	rasterizerCreateInfo.depthClampEnable = VK_FALSE;				// Change if fragments beyond near / far planes are clipped (default) or clamped to plane
+	rasterizerCreateInfo.rasterizerDiscardEnable = VK_FALSE;		// Whether to discard data and skip rasterization. Never creates fragments, only suitable for pipeline without framebuffer output 
+	rasterizerCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;		// How to handle filling points between vertices
+	rasterizerCreateInfo.lineWidth = 1.0f;							// How thick lines should be when drawn
+	rasterizerCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;			// Which face of a triangle to cull
+	rasterizerCreateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;		// Winding to determine which side is front
+	rasterizerCreateInfo.depthBiasEnable = VK_FALSE;				// Whether to add depth bias to fragments (good for stopping "Shadow acne" in shadow mapping)
+
+	// -- MULTISAMPLING -- 
+	VkPipelineMultisampleStateCreateInfo multisamplingCreateInfo = {};
+	multisamplingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+	multisamplingCreateInfo.sampleShadingEnable = VK_FALSE;						// Enable multisample shading or not
+	multisamplingCreateInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;		// Number of sample to use per fragment
+
+	// -- BLENDING -- 
+	// Blending  decides how to blend a new colour being written to a fragment, with the old value
+
+	// Blend Attachment State (how blending is handled)
+	VkPipelineColorBlendAttachmentState colorState = {};
+	colorState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT 
+		| VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;					// Colours to apply blending to
+	colorState.blendEnable = VK_TRUE;											// Enable blending
+
+	// Blending uses equation: (srcColorBlendFactor * new colour) colorBlendOp (dstColorBlendFactor * old colour)
+	colorState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+	colorState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+	colorState.colorBlendOp = VK_BLEND_OP_ADD;
+	// Summarised : (VK_BLEND_FACTOR_SRC_ALPHA * new colour) + (VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA * old colour)
+	//				(new colour alpha * new colour) + ((1 - new colour alpha) * old colour)
+
+	colorState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+	colorState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+	colorState.alphaBlendOp = VK_BLEND_OP_ADD;
+	// Summarised : (1 * new alpha) + (0 * old alpha) = new alpha
+
+	VkPipelineColorBlendStateCreateInfo colorBlendingCreateInfo = {};
+	colorBlendingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+	colorBlendingCreateInfo.logicOpEnable = VK_FALSE;							// Alternative to calculations is to use logical operations
+	//colorBlendingCreateInfo.logicOp = VK_LOGIC_OP_COPY;
+	colorBlendingCreateInfo.attachmentCount = 1; 
+	colorBlendingCreateInfo.pAttachments = &colorState;
+
+
+	// -- PIPELINE LAYOUT --
+	// TODO: Apply future descriptor set layouts
+	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
+	pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	pipelineLayoutCreateInfo.setLayoutCount = 0;
+	pipelineLayoutCreateInfo.pSetLayouts = nullptr;
+	pipelineLayoutCreateInfo.pushConstantRangeCount = 0;
+	pipelineLayoutCreateInfo.pPushConstantRanges = nullptr;
+
+	// Create Pipeline Layout
+	VkResult result = vkCreatePipelineLayout(mainDevice.LogicalDevice, &pipelineLayoutCreateInfo, nullptr, &pipelineLayout);
+	if (result != VK_SUCCESS)
+	{
+		throw std::runtime_error("Failed to create Pipeline Layout!");
+	}
+
+
+	// -- DEPTH STENCIL TESTING --
+	// TODO: Set up depth stencil testing 
+
+
+
+	// Destroy Shader Modules, no longer needed after pipeline created
+	vkDestroyShaderModule(mainDevice.LogicalDevice, fragmentShaderModule, nullptr);
+	vkDestroyShaderModule(mainDevice.LogicalDevice, vertexShaderModule, nullptr);
 }
 
 VkResult VulkanRenderer::CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger)
@@ -645,6 +804,23 @@ VkImageView VulkanRenderer::CreateImageView(VkImage image, VkFormat format, VkIm
 	}
 
 	return imageView;
+}
+
+VkShaderModule VulkanRenderer::CreateShaderModule(const std::vector<char>& code)
+{
+	VkShaderModuleCreateInfo shaderModuleCreateInfo = {};
+	shaderModuleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+	shaderModuleCreateInfo.codeSize = code.size();									// Size of code
+	shaderModuleCreateInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());	// Pointer to code (of uint32_t pointer type)
+
+	VkShaderModule shaderModule; 
+	VkResult result = vkCreateShaderModule(mainDevice.LogicalDevice, &shaderModuleCreateInfo, nullptr, &shaderModule);
+	if (result != VK_SUCCESS)
+	{
+		throw std::runtime_error("Failed to create a shader module!");
+	}
+		
+	return shaderModule;
 }
 
 

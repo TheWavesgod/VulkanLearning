@@ -45,6 +45,9 @@ private:
 	// Debug messenger to handle debug callback
 	VkDebugUtilsMessengerEXT debugMessenger;
 
+	// - Pipeline
+	VkPipelineLayout pipelineLayout;
+
 	// - Utility
 	VkFormat swapChainImageFormat;
 	VkExtent2D swapChainExtent;
@@ -58,10 +61,11 @@ private:
 	void CreateDebugMessenger();
 	void CreateSurface();
 	void CreateSwapChain();
+	void CreateGraphicsPipeline();
 
 	// - Proxy function 
 	VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
-	void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
+	void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);   
 
 	// - Get Functions
 	void GetPhysicalDevice();
@@ -81,6 +85,7 @@ private:
 	VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& surfaceCapabilities);
 	// -- Create Functions
 	VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
+	VkShaderModule CreateShaderModule(const std::vector<char>& code);
 
 public:
 	// Debug callback function
