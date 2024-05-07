@@ -19,12 +19,15 @@ public:
 	VulkanRenderer();
 
 	int init(GLFWwindow* newWindow);
+	void draw();
 	void CleanUp();
 
 	~VulkanRenderer();
 
 private:
 	GLFWwindow* window;
+
+	int currentFrame = 0;
 
 	// Vulkan components
 	VkInstance instance;
@@ -42,6 +45,8 @@ private:
 	VkSwapchainKHR swapchain;
 
 	std::vector<SwapChainImage> swapChainImages;
+	std::vector<VkFramebuffer> swapChainFramebuffers;
+	std::vector<VkCommandBuffer> commandBuffers;
 
 	// Debug messenger to handle debug callback
 	VkDebugUtilsMessengerEXT debugMessenger;
@@ -51,9 +56,17 @@ private:
 	VkPipelineLayout pipelineLayout;
 	VkRenderPass renderPass;
 
+	// - Pools
+	VkCommandPool graphicsCommandPool;
+
 	// - Utility
 	VkFormat swapChainImageFormat;
 	VkExtent2D swapChainExtent;
+
+	// - Synchronization
+	std::vector<VkSemaphore> imageAvailable;
+	std::vector<VkSemaphore> renderFinished;
+	std::vector<VkFence> drawFences;
 
 	/**
 	 *  Vulkan functions
@@ -66,8 +79,15 @@ private:
 	void CreateSwapChain();
 	void CreateRenderPass();
 	void CreateGraphicsPipeline();
+	void CreateFramebuffers();
+	void CreateCommandPool();
+	void CreateCommandBuffers();
+	void CreateSynchronization();
 
-	// - Proxy function 
+	// - Record functions
+	void RecordCommands();
+
+	// - Proxy functions 
 	VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
 	void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);   
 
