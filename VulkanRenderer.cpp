@@ -227,7 +227,7 @@ void VulkanRenderer::CreateLogicalDevice()
 		float priority = 1.0f;
 		queueCreateInfo.pQueuePriorities = &priority;				// Vulkan needs to know how to handle multiple queues, so decide priorities (1 = highest priority)
 
-		queueCreateInfos.push_back(queueCreateInfo);
+		queueCreateInfos.push_back(queueCreateInfo);			
 	}
 	
 	// Physical Device Features the Logical Device will be using
@@ -240,7 +240,7 @@ void VulkanRenderer::CreateLogicalDevice()
 	deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());		// Number of Queue Create Info
 	deviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();								// List of queue create infos so device can create required queues
 	deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());	// Number of enabled logical device extensions
-	deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions.data();											// List of enabled logical device extensions
+	deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions.data();							// List of enabled logical device extensions
 	//deviceCreateInfo.enabledLayerCount = 0;
 	deviceCreateInfo.pEnabledFeatures = &deviceFeatures;										// Physical device features Logical Device will use
 
@@ -486,15 +486,30 @@ void VulkanRenderer::CreateGraphicsPipeline()
 	// Graphics Pipeline creation info requires array of shader state creates 
 	VkPipelineShaderStageCreateInfo shaderStages[] = { vertexShaderCreateInfo, fragmentShaderCreateInfo };
 	
+	// How the data for a single vertex (including info such as postion, color, texture coords, normal, etc) is as a whole
+	VkVertexInputBindingDescription bindingDescription = {};
+	bindingDescription.binding = 0;														// Can bind multiple streams of data, this defines which one
+	bindingDescription.stride = sizeof(Vertex);											// Size of a single vertex object
+	bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;							// How to move between data after each vertex. 
+	
+	// How the data for an attribute is defined within a vertex
+	std::array<VkVertexInputAttributeDescription, 1> attributeDescriptions;
+
+	// Position Attribute
+	attributeDescriptions[0].binding = 0;												// Which binding the data is at (should be same as above)
+	attributeDescriptions[0].location = 0;												// Location in shader where data will be read from
+	attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;						// Format the data will take (also help defines the size of data)
+	attributeDescriptions[0].offset = offsetof(Vertex, pos);							// Where this attributes is defined in the data for a single vertex
+
+	// Color Attribute
 
 	// -- VERTEX INPUT --
-	// TODO: Put in vertex descriptions when resources created
 	VkPipelineVertexInputStateCreateInfo vertexInputCreateInfo = {};
 	vertexInputCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	vertexInputCreateInfo.vertexBindingDescriptionCount = 0;
-	vertexInputCreateInfo.pVertexBindingDescriptions = nullptr;							// List of Vertex Binding Descriptions (data spacing / stride information)
-	vertexInputCreateInfo.vertexAttributeDescriptionCount = 0;
-	vertexInputCreateInfo.pVertexAttributeDescriptions = nullptr;						// List if Vertex Attribute Descriptions (data format and where to bind to / from)
+	vertexInputCreateInfo.vertexBindingDescriptionCount = 1;
+	vertexInputCreateInfo.pVertexBindingDescriptions = &bindingDescription;				// List of Vertex Binding Descriptions (data spacing / stride information)
+	vertexInputCreateInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+	vertexInputCreateInfo.pVertexAttributeDescriptions = attributeDescriptions.data();	// List if Vertex Attribute Descriptions (data format and where to bind to / from)
 
 
 	// -- INPUT ASSEMBLY --

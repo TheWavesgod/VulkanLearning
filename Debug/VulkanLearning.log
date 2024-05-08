@@ -1,2 +1,3 @@
-﻿  VulkanRenderer.cpp
+﻿  Mesh.cpp
+D:\CppProject\VulkanLearning\Mesh.cpp(30): warning C4715: “Mesh::CreateVertexBuffer”: 不是所有的控件路径都返回值
   VulkanLearning.vcxproj -> D:\CppProject\VulkanLearning\Debug\VulkanLearning.exe
