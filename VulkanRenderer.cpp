@@ -22,6 +22,15 @@ int VulkanRenderer::init(GLFWwindow* newWindow)
 		CreateSurface();
 		GetPhysicalDevice();
 		CreateLogicalDevice();
+
+		// Create a mesh
+		std::vector<Vertex> meshVertices = {
+			{{ 0.0, -0.4, 0.0}, {1.0f, 0.0f, 0.0f}},
+			{{ 0.4,  0.4, 0.0}, {0.0f, 1.0f, 0.0f}},
+			{{-0.4,  0.4, 0.0}, {0.0f, 0.0f, 1.0f}}
+		};
+		firstMesh = Mesh(mainDevice.PhysicalDevice, mainDevice.LogicalDevice, &meshVertices);
+
 		CreateSwapChain();
 		CreateRenderPass();
 		CreateGraphicsPipeline();
@@ -100,6 +109,7 @@ void VulkanRenderer::CleanUp()
 	// Wait until no action being run on device before destroying	
 	vkDeviceWaitIdle(mainDevice.LogicalDevice);
 
+	firstMesh.DestroyVertexBuffer();
 	for (size_t i = 0; i < MAX_FRAME_DRAWS; ++i)
 	{
 		vkDestroySemaphore(mainDevice.LogicalDevice, renderFinished[i], nullptr);
@@ -493,7 +503,7 @@ void VulkanRenderer::CreateGraphicsPipeline()
 	bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;							// How to move between data after each vertex. 
 	
 	// How the data for an attribute is defined within a vertex
-	std::array<VkVertexInputAttributeDescription, 1> attributeDescriptions;
+	std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions;
 
 	// Position Attribute
 	attributeDescriptions[0].binding = 0;												// Which binding the data is at (should be same as above)
@@ -502,6 +512,10 @@ void VulkanRenderer::CreateGraphicsPipeline()
 	attributeDescriptions[0].offset = offsetof(Vertex, pos);							// Where this attributes is defined in the data for a single vertex
 
 	// Color Attribute
+	attributeDescriptions[1].binding = 0;												
+	attributeDescriptions[1].location = 1;												
+	attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;						
+	attributeDescriptions[1].offset = offsetof(Vertex, col);							
 
 	// -- VERTEX INPUT --
 	VkPipelineVertexInputStateCreateInfo vertexInputCreateInfo = {};
@@ -779,8 +793,12 @@ void VulkanRenderer::RecordCommands()
 				// Bind Pipeline to be used in render pass
 				vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 
+				VkBuffer vertexBuffers[] = { firstMesh.GetVertexBuffer() };									// Buffers to bind to draw
+				VkDeviceSize offsets[] = { 0 };																// Offsets into buffers being bound
+				vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);					// Command to bind vertex buffer before drawing with
+
 				// Execute Pipeline
-				vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
+				vkCmdDraw(commandBuffers[i], static_cast<uint32_t>(firstMesh.GetVertexCount()), 1, 0, 0);
 
 			// End Render Pass 
 			vkCmdEndRenderPass(commandBuffers[i]);

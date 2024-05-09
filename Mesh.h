@@ -20,6 +20,7 @@ public:
 private:
 	int vertexCount;
 	VkBuffer vertexBuffer;
+	VkDeviceMemory vertexBufferMemory;
 
 	VkPhysicalDevice physicalDevice;
 	VkDevice device;

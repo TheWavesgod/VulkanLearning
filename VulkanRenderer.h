@@ -11,6 +11,7 @@
 
 #include <iostream>
 
+#include "Mesh.h"
 #include "Utilities.h"
 
 class VulkanRenderer
@@ -28,6 +29,9 @@ private:
 	GLFWwindow* window;
 
 	int currentFrame = 0;
+
+	// Scene Objects
+	Mesh firstMesh;
 
 	// Vulkan components
 	VkInstance instance;
