@@ -1,6 +1,2 @@
-﻿  Mesh.cpp
-  VulkanRenderer.cpp
-  main.cpp
-  正在生成代码...
-D:\CppProject\VulkanLearning\Mesh.cpp(89): warning C4715: “Mesh::FindMemoryTypeIndex”: 不是所有的控件路径都返回值
+﻿  VulkanRenderer.cpp
   VulkanLearning.vcxproj -> D:\CppProject\VulkanLearning\Debug\VulkanLearning.exe
