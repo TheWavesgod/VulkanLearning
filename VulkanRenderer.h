@@ -24,7 +24,7 @@ public:
 
 	int init(GLFWwindow* newWindow);
 
-	void updateModel(glm::mat4 newModel);
+	void updateModel(int modelID, glm::mat4 newModel);
 
 	void draw();
 	void CleanUp();
@@ -40,11 +40,10 @@ private:
 	std::vector<Mesh> meshList;
 
 	// Scene Settings
-	struct MVP {
+	struct UboViewProjection {
 		glm::mat4 projection;
 		glm::mat4 view;
-		glm::mat4 model;
-	}mvp;
+	}uboViewProjection;
 
 	// Vulkan components
 	VkInstance instance;
@@ -71,8 +70,15 @@ private:
 	VkDescriptorPool descriptorPool;
 	std::vector<VkDescriptorSet> descriptorSets;
 
-	std::vector<VkBuffer> uniformBuffers;
-	std::vector<VkDeviceMemory> uniformBufferMemory;
+	std::vector<VkBuffer> vpUniformBuffers;
+	std::vector<VkDeviceMemory> vpUniformBufferMemory;
+
+	std::vector<VkBuffer> modelDynamicUniformBuffers;
+	std::vector<VkDeviceMemory> modelDynamicUniformBufferMemory;
+
+	VkDeviceSize minUniformBufferOffset;
+	size_t modelUniformAlignment;
+	UboModel* modelTransferSpace;
 
 	// Debug messenger to handle debug callback
 	VkDebugUtilsMessengerEXT debugMessenger;
@@ -114,7 +120,7 @@ private:
 	void CreateDescriptorPool();
 	void CreateDescriptorSets();
 
-	void UpdateUniformBuffer(uint32_t imageindex);
+	void UpdateUniformBuffers(uint32_t imageindex);
 
 	// - Record functions
 	void RecordCommands();
@@ -125,6 +131,9 @@ private:
 
 	// - Get Functions
 	void GetPhysicalDevice();
+
+	// - Allocate Functions
+	void AllocateDynamicBufferTransferSpace();
 
 	// - Support functions
 	// -- Check functions 

@@ -1,3 +1,5 @@
-﻿  main.cpp
-D:\CppProject\VulkanLearning\main.cpp(48,13): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+﻿  VulkanRenderer.cpp
+D:\CppProject\VulkanLearning\VulkanRenderer.cpp(83,14): warning C4018: “>=”: 有符号/无符号不匹配
+D:\CppProject\VulkanLearning\VulkanRenderer.cpp(1107,74): warning C4244: “=”: 从“VkDeviceSize”转换到“size_t”，可能丢失数据
+D:\CppProject\VulkanLearning\Utilities.h(93): warning C4715: “FindMemoryTypeIndex”: 不是所有的控件路径都返回值
   VulkanLearning.vcxproj -> D:\CppProject\VulkanLearning\Debug\VulkanLearning.exe
