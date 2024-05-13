@@ -66,6 +66,7 @@ private:
 
 	// - Descriptors 
 	VkDescriptorSetLayout descriptorSetLayout;
+	VkPushConstantRange pushConstantRange;
 
 	VkDescriptorPool descriptorPool;
 	std::vector<VkDescriptorSet> descriptorSets;
@@ -76,9 +77,10 @@ private:
 	std::vector<VkBuffer> modelDynamicUniformBuffers;
 	std::vector<VkDeviceMemory> modelDynamicUniformBufferMemory;
 
-	VkDeviceSize minUniformBufferOffset;
+
+	/*VkDeviceSize minUniformBufferOffset;
 	size_t modelUniformAlignment;
-	UboModel* modelTransferSpace;
+	Model* modelTransferSpace;*/
 
 	// Debug messenger to handle debug callback
 	VkDebugUtilsMessengerEXT debugMessenger;
@@ -111,6 +113,7 @@ private:
 	void CreateSwapChain();
 	void CreateRenderPass();
 	void CreateDescriptorSetLayout();
+	void CreatePushConstantRange();
 	void CreateGraphicsPipeline();
 	void CreateFramebuffers();
 	void CreateCommandPool();
@@ -123,7 +126,7 @@ private:
 	void UpdateUniformBuffers(uint32_t imageindex);
 
 	// - Record functions
-	void RecordCommands();
+	void RecordCommands(uint32_t currentImage);
 
 	// - Proxy functions 
 	VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
