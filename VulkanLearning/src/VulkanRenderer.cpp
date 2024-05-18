@@ -591,8 +591,8 @@ void VulkanRenderer::CreatePushConstantRange()
 void VulkanRenderer::CreateGraphicsPipeline()
 {
 	// Read in SPIR-V code of shaders
-	auto vertexShaderCode = readFile("Shaders/vert.spv");
-	auto fragmentShaderCode = readFile("Shaders/frag.spv");
+	auto vertexShaderCode = readFile("../Shaders/vert.spv");
+	auto fragmentShaderCode = readFile("../Shaders/frag.spv");
 
 	// Build Shader Modules to link to Graphics Pipeline
 	VkShaderModule vertexShaderModule = CreateShaderModule(vertexShaderCode);

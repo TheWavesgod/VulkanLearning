@@ -1,9 +1,0 @@
-﻿  VulkanRenderer.cpp
-VulkanRenderer.obj : error LNK2019: 无法解析的外部符号 vkCreateInstance，函数 "private: void __cdecl VulkanRenderer::CreateInstance(void)" (?CreateInstance@VulkanRenderer@@AEAAXXZ) 中引用了该符号
-VulkanRenderer.obj : error LNK2019: 无法解析的外部符号 vkDestroyInstance，函数 "public: void __cdecl VulkanRenderer::CleanUp(void)" (?CleanUp@VulkanRenderer@@QEAAXXZ) 中引用了该符号
-VulkanRenderer.obj : error LNK2019: 无法解析的外部符号 vkEnumeratePhysicalDevices，函数 "private: void __cdecl VulkanRenderer::GetPhysicalDevice(void)" (?GetPhysicalDevice@VulkanRenderer@@AEAAXXZ) 中引用了该符号
-VulkanRenderer.obj : error LNK2019: 无法解析的外部符号 vkGetPhysicalDeviceFeatures，函数 "private: bool __cdecl VulkanRenderer::CheckDeviceSuitable(struct VkPhysicalDevice_T *)" (?CheckDeviceSuitable@VulkanRenderer@@AEAA_NPEAUVkPhysicalDevice_T@@@Z) 中引用了该符号
-VulkanRenderer.obj : error LNK2019: 无法解析的外部符号 vkGetPhysicalDeviceProperties，函数 "private: bool __cdecl VulkanRenderer::CheckDeviceSuitable(struct VkPhysicalDevice_T *)" (?CheckDeviceSuitable@VulkanRenderer@@AEAA_NPEAUVkPhysicalDevice_T@@@Z) 中引用了该符号
-VulkanRenderer.obj : error LNK2019: 无法解析的外部符号 vkEnumerateInstanceExtensionProperties，函数 "private: bool __cdecl VulkanRenderer::CheckInstanceExtensionSupport(class std::vector<char const *,class std::allocator<char const *> > *)" (?CheckInstanceExtensionSupport@VulkanRenderer@@AEAA_NPEAV?$vector@PEBDV?$allocator@PEBD@std@@@std@@@Z) 中引用了该符号
-D:\CppProject\VulkanLearning\\..\Library\Vulkan\Lib32\vulkan-1.lib : warning LNK4272: 库计算机类型“x86”与目标计算机类型“x64”冲突
-D:\CppProject\VulkanLearning\x64\Debug\VulkanLearning.exe : fatal error LNK1120: 6 个无法解析的外部命令
